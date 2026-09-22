@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
-   Devika & Nidheesh — Wedding Website Script
+   Ajeesh & Varsha · Akheesh & Aiswarya — Wedding Website Script
+   Burgundy Theme · 2 Couples Edition
    Ultra-premium, GPU-optimized, smooth-scroll experience
-   No jank. Only transform/opacity animated for compositor.
 ═══════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
@@ -18,14 +18,42 @@
 
   // Force scroll to top on reload
   if (APP) {
-    // Some browsers try to restore scroll on load; we override it.
     history.scrollRestoration = 'manual';
     APP.scrollTop = 0;
     window.scrollTo(0, 0);
   }
 
+  // ── BACKGROUND TILES (alternating flip) ───────────────────────
+  function setupBgTiles() {
+    var container = $('bgPattern');
+    if (!container || !APP) return;
+    var img = new Image();
+    img.src = 'images/assets/background.png';
+    img.onload = function () {
+      var appWidth = APP.offsetWidth || 430;
+      var scale = appWidth / img.naturalWidth;
+      var tileH = img.naturalHeight * scale;
+      function fill() {
+        var totalH = APP.scrollHeight;
+        var count = Math.ceil(totalH / tileH) + 2;
+        var existing = container.children.length;
+        for (var i = existing; i < count; i++) {
+          var tile = document.createElement('img');
+          tile.src = 'images/assets/background.png';
+          tile.alt = '';
+          tile.className = 'bg-tile' + (i % 2 === 1 ? ' flipped' : '');
+          container.appendChild(tile);
+        }
+      }
+      fill();
+      // Re-fill if content changes height (e.g. images load, sections expand)
+      var ro = window.ResizeObserver ? new ResizeObserver(fill) : null;
+      if (ro) ro.observe(APP);
+    };
+  }
+  setupBgTiles();
+
   // ── LOADER ───────────────────────────────────────────────────
-  // Hide loader after assets+animations settle (~2.4s)
   function setupLoader() {
     var loader = $('loader');
     if (!loader) return;
@@ -48,12 +76,13 @@
   setupLoader();
 
   // ── HERO COUNTDOWN ───────────────────────────────────────────
+  // Countdown to the first event: November 1, 2026 (Couple 1 Thaalikettu)
   function initCountdown() {
     var dEl = $('cd-d'), hEl = $('cd-h'), mEl = $('cd-m'), sEl = $('cd-s');
     if (!dEl || !hEl || !mEl || !sEl) return;
     
-    // Set target to October 24, 2026 09:00:00 (local time)
-    var target = new Date(2026, 9, 24, 9, 0, 0).getTime();
+    // Target: November 1, 2026 08:15:00 (local time)
+    var target = new Date(2026, 10, 1, 8, 15, 0).getTime();
 
     function update() {
       var now = new Date().getTime();
@@ -79,47 +108,6 @@
     setInterval(update, 1000);
   }
   initCountdown();
-  // ── STORY SCROLLER DOTS ───────────────────────────────────────
-  var storyScroller = document.getElementById('story-scroller');
-  var ssDots = document.querySelectorAll('.ss-dot');
-
-  if (storyScroller && ssDots.length) {
-    // Update dots on scroll
-    storyScroller.addEventListener('scroll', function () {
-      var idx = Math.round(storyScroller.scrollLeft / storyScroller.offsetWidth);
-      ssDots.forEach(function (d, i) {
-        d.classList.toggle('active', i === idx);
-      });
-    }, { passive: true });
-
-    // Dot click scrolls to panel
-    ssDots.forEach(function (dot) {
-      dot.addEventListener('click', function () {
-        var idx = parseInt(dot.getAttribute('data-idx'), 10);
-        storyScroller.scrollTo({ left: idx * storyScroller.offsetWidth, behavior: 'smooth' });
-      });
-    });
-
-    // Drag to scroll on desktop
-    var ssDown = false, ssStartX, ssScrollLeft;
-    storyScroller.addEventListener('mousedown', function (e) {
-      ssDown = true;
-      ssStartX = e.pageX - storyScroller.offsetLeft;
-      ssScrollLeft = storyScroller.scrollLeft;
-      storyScroller.style.cursor = 'grabbing';
-    });
-    document.addEventListener('mouseup', function () {
-      if (!ssDown) return;
-      ssDown = false;
-      storyScroller.style.cursor = '';
-    });
-    storyScroller.addEventListener('mousemove', function (e) {
-      if (!ssDown) return;
-      e.preventDefault();
-      var x = e.pageX - storyScroller.offsetLeft;
-      storyScroller.scrollLeft = ssScrollLeft - (x - ssStartX);
-    });
-  }
 
   // ── SCROLL REVEAL (IntersectionObserver) ─────────────────────
   var revealEls = qsa('.reveal');
@@ -140,76 +128,51 @@
     revealEls.forEach(function (el) { el.classList.add('visible'); });
   }
 
-  // ── 3D TILT — Invitation Card ────────────────────────────────
-  // GPU-only: only transforms, smooth, mobile-aware
-  var invCard = $('inv-card');
-  if (invCard && window.matchMedia('(hover:hover) and (pointer:fine)').matches) {
-    invCard.addEventListener('mousemove', function (e) {
-      var rect  = invCard.getBoundingClientRect();
-      var cx    = rect.left + rect.width / 2;
-      var cy    = rect.top + rect.height / 2;
-      var dx    = (e.clientX - cx) / (rect.width / 2);
-      var dy    = (e.clientY - cy) / (rect.height / 2);
-      var rotX  = -dy * 6;
-      var rotY  =  dx * 6;
-      invCard.style.transform =
-        'perspective(900px) rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg) translateZ(6px)';
-      invCard.style.boxShadow =
-        (rotY * -1.5) + 'px ' + (rotX * 1.5) + 'px 50px rgba(0,0,0,.12)';
-    });
-    invCard.addEventListener('mouseleave', function () {
-      invCard.style.transform = '';
-      invCard.style.boxShadow = '';
-    });
+  // ── INVITATION ENVELOPE — Scroll reveal ──────────────────────
+  var invEnvWrap = qs('.inv-envelope-wrap');
+  if (invEnvWrap && 'IntersectionObserver' in window) {
+    var invObs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          invObs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    invObs.observe(invEnvWrap);
   }
 
-  // Gallery auto-carousel runs unconditionally without pausing on hover/touch
-
   // ── MUSIC TOGGLE & AUTO-PLAY ─────────────────────────────────
-  //
-  // Behaviour:
-  //  • Page loads silent (muted) — bypasses browser autoplay block
-  //  • EVERY reload: first interaction (touch/click/scroll) → music plays
-  //  • The button is the ONLY way to pause or resume during a session
-  // ─────────────────────────────────────────────────────────────
   var audio    = $('bg-audio');
   var musicBtn = $('music-toggle');
   var icPlay   = $('ic-play');
   var icPause  = $('ic-pause');
 
-  // Tracks if audio has been unlocked this session
   var interacted = false;
-  // Tracks if user manually paused via button during this session
   var userPaused = false;
 
-  // Start silent to bypass browser autoplay block
   if (audio) {
     audio.muted  = true;
     audio.volume = 1;
   }
 
-  // Update button icons
   function syncIcons(isPlaying) {
     if (icPlay)  icPlay.style.display  = isPlaying ? 'none' : '';
     if (icPause) icPause.style.display = isPlaying ? ''     : 'none';
   }
-  syncIcons(false); // show play icon on load
+  syncIcons(false);
 
-  // Unlock and start audio — called on first real user gesture
   function unlockAudio() {
     if (interacted || userPaused) return;
 
-    // Try to unmute and play
     audio.muted = false;
     var p = audio.play();
     
     if (p !== undefined) {
       p.then(function () {
-        // Success! It is playing.
         interacted = true;
         syncIcons(true);
 
-        // Clean up listeners only AFTER successful play
         ['click', 'touchstart', 'touchend', 'touchmove', 'keydown', 'pointerdown', 'pointerup'].forEach(function (evt) {
           document.removeEventListener(evt, unlockAudio, true);
           document.removeEventListener(evt, unlockAudio, { capture: true });
@@ -217,22 +180,18 @@
         if (APP) APP.removeEventListener('scroll', unlockAudio, true);
         window.removeEventListener('scroll', unlockAudio, true);
       }).catch(function (err) {
-        // Silently fail and wait for the next user interaction event
         interacted = false;
       });
     }
   }
 
-  // Register on DOCUMENT (capture phase) — catches clicks anywhere including
-  // inside #app, iframes, shadow roots. Also listen on #app scroll since
-  // it is the real scroll container, not window.
   ['click', 'touchstart', 'touchend', 'touchmove', 'keydown', 'pointerdown', 'pointerup'].forEach(function (evt) {
     document.addEventListener(evt, unlockAudio, { passive: true, capture: true });
   });
   if (APP) APP.addEventListener('scroll', unlockAudio, { passive: true });
   window.addEventListener('scroll', unlockAudio, { passive: true });
 
-  // ── Button: ONLY toggle mechanism ──
+  // Button toggle
   if (musicBtn && audio) {
     musicBtn.addEventListener('click', function (e) {
       e.stopPropagation();
@@ -240,12 +199,10 @@
       var isPlaying = !audio.paused && !audio.muted;
 
       if (isPlaying) {
-        // Pause
         audio.pause();
         userPaused = true;
         syncIcons(false);
       } else {
-        // Resume
         audio.muted = false;
         audio.play().then(function () {
           userPaused = false;
@@ -278,7 +235,7 @@
       // Validation
       if (!name) {
         $('rf-name').focus();
-        $('rf-name').style.borderBottomColor = '#9B2226';
+        $('rf-name').style.borderBottomColor = '#800020';
         return;
       }
       if (!guests) {
@@ -287,7 +244,7 @@
       }
       if (!attending) {
         var firstLabel = qs('.rf-attend label');
-        if (firstLabel) firstLabel.style.outline = '1px solid #9B2226';
+        if (firstLabel) firstLabel.style.outline = '1px solid #800020';
         setTimeout(function () { if (firstLabel) firstLabel.style.outline = ''; }, 2000);
         return;
       }
@@ -327,65 +284,6 @@
     });
   }
 
-  // ── STORY BLOCK PARALLAX ON SCROLL ───────────────────────────
-  // Subtle depth — images shift slightly as they enter view
-  var storyImgs = qsa('.story-block .story-img img');
-
-  if (storyImgs.length && 'IntersectionObserver' in window) {
-    var storyObs = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (e.isIntersecting) {
-          e.target.style.transform = 'scale(1.0)';
-        }
-      });
-    }, { threshold: 0.2 });
-    storyImgs.forEach(function (img) {
-      img.style.transform = 'scale(1.06)';
-      img.style.transition = 'transform 1.2s cubic-bezier(.23,1,.32,1)';
-      storyObs.observe(img);
-    });
-  }
-
-  // ── TEXT PARALLAX (SYNC WITH SCROLL) ─────────────────────────
-  var parallaxLayers = [
-    { selector: '.story-caption .s-name, .story-panel .s-name', speed: 0.15 },
-    { selector: '.story-caption .s-role, .story-panel .s-role, .story-panel .s-accent', speed: 0.08 },
-    { selector: '.story-caption .s-num, .story-panel .s-num', speed: 0.03 }
-  ];
-  parallaxLayers.forEach(function(layer) { layer.els = qsa(layer.selector); });
-
-  if (APP) {
-    APP.addEventListener('scroll', function() {
-      requestAnimationFrame(function() {
-        var viewCenter = window.innerHeight / 2;
-        parallaxLayers.forEach(function(layer) {
-          layer.els.forEach(function(el) {
-            var parent = el.closest('.story-block');
-            if (!parent) return;
-            var rect = parent.getBoundingClientRect();
-            var parentCenter = rect.top + (rect.height / 2);
-            var diff = parentCenter - viewCenter;
-            
-            // Constrain diff to avoid text flying completely out of bounds on long screens
-            if (diff > 600) diff = 600;
-            if (diff < -600) diff = -600;
-            
-            var yOffset = diff * layer.speed;
-            el.style.transform = 'translate3d(0, ' + yOffset + 'px, 0)';
-          });
-        });
-      });
-    }, { passive: true });
-  }
-
-  // ── SCHEDULE ROW — tap / click highlight on mobile ────────────
-  qsa('.sched-row').forEach(function (row) {
-    row.addEventListener('click', function () {
-      this.style.background = 'var(--parchment)';
-      setTimeout(function () { row.style.background = ''; }, 800);
-    });
-  });
-
   // ── SMOOTH ANCHOR SCROLL ──────────────────────────────────────
   qsa('a[href^="#"]').forEach(function (a) {
     a.addEventListener('click', function (e) {
@@ -396,8 +294,5 @@
       }
     });
   });
-
-  // ── PEARL THREAD: stagger light animation on visibility ───────
-  // Already handled by CSS animation-delay; JS does nothing extra.
 
 })();
