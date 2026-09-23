@@ -1,6 +1,6 @@
 /**
  * ══════════════════════════════════════════════════════════════
- *  Devika & Nidheesh Wedding — RSVP Google Apps Script
+ *  Ajeesh & Varsha · Akheesh & Aiswarya — RSVP Google Apps Script
  *  Paste this entire file into Google Apps Script editor
  *  (script.google.com) and deploy as a Web App.
  * ══════════════════════════════════════════════════════════════
@@ -43,7 +43,7 @@ function doOptions(e) {
 // ── HANDLE GET (health check) ─────────────────────────────────
 function doGet(e) {
   return ContentService
-    .createTextOutput(JSON.stringify({ status: 'RSVP endpoint is live', wedding: 'Devika & Nidheesh' }))
+    .createTextOutput(JSON.stringify({ status: 'RSVP endpoint is live', wedding: 'Ajeesh & Varsha · Akheesh & Aiswarya' }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -90,7 +90,7 @@ function getOrCreateSheet() {
     ss = SpreadsheetApp.openById(SHEET_ID);
   } else {
     // Create a new spreadsheet
-    ss = SpreadsheetApp.create('Devika & Nidheesh — Wedding RSVPs 💍');
+    ss = SpreadsheetApp.create('Ajeesh & Varsha · Akheesh & Aiswarya — Wedding RSVPs 💍');
     Logger.log('Created new sheet: ' + ss.getId());
     // ← After first run, copy this ID into SHEET_ID above
     PropertiesService.getScriptProperties().setProperty('SHEET_ID', ss.getId());
@@ -112,31 +112,31 @@ function setupSheetHeader(sheet) {
 
   // ─ Row 1: Wedding Title (merged across all columns)
   sheet.getRange('A1:E1').merge();
-  sheet.getRange('A1').setValue('💍  Devika & Nidheesh Wedding — Guest Attendance')
+  sheet.getRange('A1').setValue('💍  Ajeesh & Varsha · Akheesh & Aiswarya — Guest RSVPs')
     .setHorizontalAlignment('center')
     .setVerticalAlignment('middle')
     .setFontFamily('Georgia')
-    .setFontSize(16)
+    .setFontSize(15)
     .setFontWeight('bold')
-    .setFontColor('#F8F3EB')
-    .setBackground('#2A2420');
+    .setFontColor('#FFF5EA')
+    .setBackground('#5B0018');
   sheet.setRowHeight(1, 52);
 
   // ─ Row 2: Event Info (merged)
   sheet.getRange('A2:E2').merge();
-  sheet.getRange('A2').setValue('Reception: October 24, 2025  ·  Wedding Ceremony: October 25, 2025')
+  sheet.getRange('A2').setValue('Wedding Celebrations · Shanmughan Family')
     .setHorizontalAlignment('center')
     .setVerticalAlignment('middle')
     .setFontFamily('Georgia')
     .setFontSize(11)
     .setFontStyle('italic')
-    .setFontColor('#D4B37A')
-    .setBackground('#2A2420');
+    .setFontColor('#E8C488')
+    .setBackground('#800020');
   sheet.setRowHeight(2, 32);
 
   // ─ Row 3: blank spacer
   sheet.getRange('A3:E3').merge();
-  sheet.getRange('A3').setBackground('#2A2420');
+  sheet.getRange('A3').setBackground('#800020');
   sheet.setRowHeight(3, 8);
 
   // ─ Row 4: Summary Stats
