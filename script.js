@@ -77,7 +77,7 @@
     var container = $('bgPattern');
     if (!container || !APP) return;
     var img = new Image();
-    img.src = 'images/assets/background.png';
+    img.src = 'images/assets/background.webp';
     img.onload = function () {
       function getContentHeight() {
         var footer = APP.querySelector('footer');
@@ -100,7 +100,7 @@
         if (count > existing) {
           for (var i = existing; i < count; i++) {
             var tile = document.createElement('img');
-            tile.src = 'images/assets/background.png';
+            tile.src = 'images/assets/background.webp';
             tile.alt = '';
             tile.className = 'bg-tile' + (i % 2 === 1 ? ' flipped' : '');
             container.appendChild(tile);
