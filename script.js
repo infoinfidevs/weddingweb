@@ -136,6 +136,10 @@
   }
   setupSpirals();
   window.addEventListener('resize', setupSpirals);
+  if (window.ResizeObserver && APP) {
+    var spiralRo = new ResizeObserver(setupSpirals);
+    spiralRo.observe(APP);
+  }
 
   // ── LOADER ───────────────────────────────────────────────────
   function setupLoader() {
@@ -232,6 +236,31 @@
       });
     }, { threshold: 0.3 });
     invObs.observe(invEnvWrap);
+  }
+
+  // ── GALLERY TOUCH PAUSE ───────────────────────────────────────
+  var gTrack = $('g-track');
+  var gWrap = qs('.g-carousel-wrap');
+  if (gTrack && gWrap) {
+    var resumeTimer = null;
+    gWrap.addEventListener('touchstart', function () {
+      if (resumeTimer) clearTimeout(resumeTimer);
+      gTrack.classList.add('is-paused');
+    }, { passive: true });
+
+    gWrap.addEventListener('touchend', function () {
+      if (resumeTimer) clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(function () {
+        gTrack.classList.remove('is-paused');
+      }, 1200);
+    }, { passive: true });
+
+    gWrap.addEventListener('touchcancel', function () {
+      if (resumeTimer) clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(function () {
+        gTrack.classList.remove('is-paused');
+      }, 1000);
+    }, { passive: true });
   }
 
   // ── MUSIC TOGGLE & AUTO-PLAY ─────────────────────────────────
